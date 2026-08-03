@@ -11,14 +11,17 @@ version = "0.2.0"
 description = "Geetest CAPTCHA v4 bypass library"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = [
-    "pycryptodome>=3.23.0",
-    "smcryptopy>=0.2.1",
-    "wreq>=0.12.0",
-]
+dependencies = ["pycryptodome>=3.23.0", "smcryptopy>=0.2.1", "wreq>=0.12.0"]
 license = { text = "MIT" }
 authors = [{ name = "wulu007", email = "dabaobeix@gmail.com" }]
-keywords = ["geetest", "bypass", "captcha", "reverse-engineering", "pow"]
+keywords = [
+    "geetest",
+    "bypass",
+    "captcha",
+    "reverse-engineering",
+    "pow",
+    'crack',
+]
 
 [project.urls]
 Homepage = "https://github.com/wulu007/geetest-bypass"
