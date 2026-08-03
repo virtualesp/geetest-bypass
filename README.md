@@ -172,6 +172,21 @@ Geetest.register_solver('icon', solve_icon)
 Geetest.register_solver('slide', my_custom_slide_solver)
 ```
 
+
+### 无障碍模式
+
+极验 v4 的部分站点在服务端开启了语音验证通道（无障碍模式）。当站点支持时，**无论原始风险类型是什么**，都可以通过 `voice=True` 强制切换到语音验证，从而绕过原本的滑块、点选等行为验证。
+
+```python
+# 原本是滑块验证，但站点支持无障碍模式
+g = Geetest(captcha_id='your_captcha_id', risk_type='slide', voice=True)
+result = await g.resolve()
+```
+
+切换后流程变为：加载语音验证码 → 下载音频 → 离线识别数字 → 提交验证。全程无需浏览器环境，不需处理图片识别。
+
+> **注意**：并非所有站点都开启了无障碍通道。如果站点不支持，`load()` 返回的 `show_voice` 字段为 `false`，此时设置 `voice=True` 不会生效，仍按原 `risk_type` 处理。
+
 ### 异常
 
 | 异常           | 说明                         |
