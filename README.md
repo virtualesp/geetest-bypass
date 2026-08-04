@@ -194,6 +194,12 @@ result = await g.resolve()
 | `GeetestError` | 所有自定义异常的基类         |
 | `VerifyError`  | 验证失败（所有重试均未通过） |
 
+## 支持与更新
+
+- 本项目会持续跟踪极验 v4 的行为验证变化，及时更新绕过逻辑与 solver。
+- 遇到问题欢迎提交 [Issue](https://github.com/wulu007/geetest-bypass/issues)，也欢迎通过 PR 贡献代码。
+- 如果本项目对你有所帮助，欢迎点个 ⭐ Star 鼓励作者持续更新。
+
 ## 免责声明
 
 本项目仅供学习和研究使用。使用者应遵守相关法律法规及平台服务条款，
