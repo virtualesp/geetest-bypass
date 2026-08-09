@@ -1,4 +1,5 @@
 import base64
+import re
 
 import cv2
 import numpy as np
@@ -6,7 +7,11 @@ import pytest
 import resvg_py
 
 from wulu_geetest_bypass import Geetest
-from wulu_geetest_bypass.solver.svg import _grid_svgs, _rgba_to_gray, match
+from wulu_geetest_bypass.solver.svg import _grid_svgs, _rgba_to_gray, frame_times, match
+
+
+def _dump_svg(svg: str, out) -> None:
+    out.write_text(svg, encoding='utf-8')
 
 
 def _composite(imgs, scores, best_i, hint_edge, n_cols):
@@ -57,41 +62,46 @@ def _edges(grids):
     return [cv2.Canny(_rgba_to_gray(resvg_py.svg_to_bytes(g)), 50, 150) for g in grids]
 
 
-@pytest.mark.asyncio
-async def test_svg_seed(cid, out_dir):
-    g = Geetest(captcha_id=cid, risk_type='svg_seed')
+async def _load_svg_resources(cid, risk_type):
+    g = Geetest(captcha_id=cid, risk_type=risk_type)
     data = await g.load()
-    svg = data['question_path']
-    hint_raw = base64.b64decode(data['answer_path'])
-    hint_edge = cv2.Canny(_rgba_to_gray(hint_raw), 50, 150)
-    grids = _grid_svgs(svg)
-    imgs = _edges(grids)
-    results = match(svg, data['answer_path'])
-    scores = {r['grid']: r['score'] for r in results}
-    best_i = max(scores, key=lambda k: scores[k])
-
-    canvas = _composite(imgs, scores, best_i, hint_edge, n_cols=7)
-    out = out_dir / 'seed_grids.png'
-    cv2.imwrite(out, canvas)
-    print(f'seed: best=grid {best_i} score={scores[best_i]} {out}')
+    q, a = data['question_path'], data['answer_path']
+    if risk_type == 'svg_seed':
+        svg, hint = q, base64.b64decode(a)
+    else:
+        svg = (await g._load_resource(q)).decode()
+        hint = await g._load_resource(a)
+    return svg, hint
 
 
 @pytest.mark.asyncio
-async def test_svg_icon(cid, out_dir):
-    g = Geetest(captcha_id=cid, risk_type='svg_icon')
-    data = await g.load()
-    svg = (await g._load_resource(data['question_path'])).decode()
-    hint_raw = await g._load_resource(data['answer_path'])
+@pytest.mark.parametrize('risk_type', ['svg_seed', 'svg_icon'])
+async def test_frame_times(cid, risk_type):
+    svg, _ = await _load_svg_resources(cid, risk_type)
+    frames = frame_times(svg)
+    assert len(frames) == 3
+    for (s1, e1), (s2, e2) in zip(frames, frames[1:]):
+        assert s2 - e1 <= 1
+        assert s2 > s1
+        assert e2 > e1
 
-    results = match(svg, hint_raw)
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ('risk_type', 'n_cols'),
+    [('svg_seed', 7), ('svg_icon', 4)],
+)
+async def test_svg_seed_solve(cid, svg_out_dir, risk_type, n_cols):
+    svg, hint = await _load_svg_resources(cid, risk_type)
+    hint_edge = cv2.Canny(_rgba_to_gray(hint), 50, 150)
+    _dump_svg(svg, svg_out_dir / f'{risk_type}.svg')
+    grids = _grid_svgs(svg)
+    imgs = _edges(grids)
+    results = match(svg, hint)
     scores = {r['grid']: r['score'] for r in results}
     best_i = max(scores, key=lambda k: scores[k])
 
-    hint_edge = cv2.Canny(_rgba_to_gray(hint_raw), 50, 150)
-    grids = _grid_svgs(svg)
-    imgs = _edges(grids)
-
-    canvas = _composite(imgs, scores, best_i, hint_edge, n_cols=4)
-    out = out_dir / 'icon_grids.png'
+    canvas = _composite(imgs, scores, best_i, hint_edge, n_cols=n_cols)
+    out = svg_out_dir / f'{risk_type}.png'
     cv2.imwrite(out, canvas)
-    print(f'icon: best=grid {best_i} score={scores[best_i]} {out}')
+    print(f'{risk_type}: best=grid {best_i} score={scores[best_i]} {out}')
