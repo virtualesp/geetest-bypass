@@ -98,7 +98,7 @@ def _decode_hint(hint: str | bytes) -> bytes:
     raise TypeError('hint must be str or bytes')
 
 
-def match(svg: str, hint: str | bytes) -> list[dict[str, int]]:
+def match(svg: str, hint: str | bytes) -> list[dict]:
     if not isinstance(svg, str) or not svg.strip():
         raise TypeError('svg must be a non-empty string')
 
@@ -121,10 +121,56 @@ def match(svg: str, hint: str | bytes) -> list[dict[str, int]]:
         _, score, _, _ = cv2.minMaxLoc(
             cv2.matchTemplate(grid_edge, hint_edge, cv2.TM_CCORR_NORMED)
         )
-        results.append({'grid': len(results) + 1, 'score': int(score * 1000000)})
+        results.append({'grid': len(results) + 1, 'score': round(score, 4)})
 
     results.sort(key=lambda r: r['score'], reverse=True)
     return results
+
+
+def _keyframe_block(svg: str, n: int) -> str:
+    m = re.search(rf'@keyframes geetest_frame{n}_animation_hash\s*\{{', svg)
+    if m is None:
+        raise ValueError(f'no @keyframes for frame {n} in SVG')
+    start = m.end() - 1
+    depth = 0
+    for i in range(start, len(svg)):
+        if svg[i] == '{':
+            depth += 1
+        elif svg[i] == '}':
+            depth -= 1
+            if depth == 0:
+                return svg[start : i + 1]
+    raise ValueError(f'unbalanced @keyframes for frame {n} in SVG')
+
+
+def frame_times(svg: str) -> list[tuple[int, int]]:
+    """Parse each frame's visible time window (ms) from the SVG animation.
+
+    Returns [(s1,e1), (s2,e2), (s3,e3)] — for each frame, the time span during
+    which its opacity is > 0 (visible), derived from the @keyframes steps and
+    the animation duration.
+    """
+    duration = None
+    for m in re.finditer(r'geetest_frame\d_animation_hash\s+([\d.]+)s', svg):
+        duration = float(m.group(1))
+        break
+    if duration is None:
+        raise ValueError('no frame animation duration found in SVG')
+
+    total = round(duration * 1000)
+    frames = []
+    for n in range(1, 4):
+        block = _keyframe_block(svg, n)
+        steps = [
+            (float(p), float(o))
+            for p, o in re.findall(r'([\d.]+)%\s*\{\s*opacity:\s*([\d.]+)', block)
+        ]
+        visible = [p for p, o in steps if o > 0]
+        start = round(min(visible) / 100 * total)
+        end = round(max(visible) / 100 * total)
+        frames.append((start, end))
+
+    return frames
 
 
 def solve_svg(svg: str, hint: str | bytes) -> tuple[int, tuple[int, int]]:

@@ -18,6 +18,7 @@ from .config import Config
 from .crypto import build_w
 from .parser import generate_pow, parse_abo_pair
 from .solver import solve_match, solve_slide, solve_svg, solve_voice, solve_winlinze
+from .solver.svg import frame_times
 
 
 def _callback() -> str:
@@ -185,11 +186,9 @@ class Geetest:
                 payload['passtime'] = random.randint(600, 1400)
             case 'svg_seed' | 'svg_icon':
                 layer, point = solver(data['question_path'], data['answer_path'])
-                frame = [0, 2248, 4970, 7642]
+                start, end = frame_times(data['question_path'])[layer]
                 payload['userresponse'] = point
-                payload['passtime'] = random.randint(
-                    frame[layer] + 500, frame[layer + 1]
-                )
+                payload['passtime'] = random.randint(start + 50, end - 50)
             case 'match' | 'winlinze':
                 payload['userresponse'] = solver(data['ques'])
                 payload['passtime'] = random.randint(600, 1400)
