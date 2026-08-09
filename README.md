@@ -71,10 +71,10 @@ asyncio.run(main())
 | ---------- | ---------------- | --------- | ---- |
 | `ai`       | 无感验证         | 无        | ✅    |
 | `slide`    | 滑块拼图         | `[slide]` | ✅    |
-| `match`    | 3×3 连线 & 9宫格 | 无        | ✅    |
+| `match`    | 3×3 连线         | 无        | ✅    |
 | `winlinze` | 五子棋           | 无        | ✅    |
-| `svg_seed` | SVG 图片选择     | `[svg]`   | ✅    |
-| `svg_icon` | SVG 图标选择     | `[svg]`   | ✅    |
+| `svg_seed` | SVG 3x3 图片选择 | `[svg]`   | ✅    |
+| `svg_icon` | SVG 2x2 图标选择 | `[svg]`   | ✅    |
 | `voice`    | 语音验证         | `[voice]` | ✅    |
 | `icon`     | 图标点选         | 无        | ❌    |
 | `word`     | 文字点选         | 无        | ❌    |
