@@ -1,16 +1,26 @@
 # wulu-geetest-bypass-voice
 
-Voice digit recognition templates for [wulu-geetest-bypass](https://github.com/wulu007/geetest-bypass).
+Voice solver for [wulu-geetest-bypass](https://github.com/wulu007/geetest-bypass).
 
 > **Note**: This is an extension package for `wulu-geetest-bypass` and is not intended for standalone use. Install via the main package instead.
 
-Provides pre-computed MFCC centroids for 12 languages, enabling offline digit recognition in Geetest v4 voice captchas without any deep learning framework.
+Provides the full offline voice digit recognition engine (MFCC + pre-computed centroids for 12 languages), enabling Geetest v4 voice captchas to be solved without any deep learning framework.
 
 ## Installation
 
 ```bash
 pip install wulu-geetest-bypass[voice]
 ```
+
+## Plugin registration
+
+This package registers its solver with the main package via the
+`wulu_geetest_bypass.solvers` entry point group, so voice captchas are
+handled automatically once the package is installed.
+
+Third-party packages wanting to replace this engine can register their own
+`voice` entry point in the same group, or use `Geetest.register_solver('voice', my_func)`
+at runtime.
 
 ## Supported Languages
 
@@ -32,12 +42,8 @@ pip install wulu-geetest-bypass[voice]
 ## Usage
 
 ```python
-from wulu_geetest_bypass_voice import load_templates
+from wulu_geetest_bypass import Geetest
 
-X, y, sr, lang, prompt = load_templates('eng')
-# X: (10, 39) centroid array
-# y: [0 1 2 3 4 5 6 7 8 9]
-# sr: 16000
-# lang: 'eng'
-# prompt: (39,) prompt centroid
+g = Geetest(captcha_id='...', risk_type='voice')
+seccode = await g.resolve()
 ```

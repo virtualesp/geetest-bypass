@@ -1,13 +1,32 @@
+import functools
+from importlib.resources import files
+
 import miniaudio
 import numpy as np
-from wulu_geetest_bypass_voice import load_templates
 
-from .._exceptions import VerifyError
+from wulu_geetest_bypass._exceptions import VerifyError
 
-_cache: dict[str, tuple[np.ndarray, np.ndarray, int, str, np.ndarray]] = {}
-_prompts: dict[str, np.ndarray] | None = None
-_mel_basis = None
-_dct_mat = None
+
+def solve_voice(mp3_bytes: bytes, lang: str = '') -> str:
+    sr = 16000
+    audio = _load_audio(mp3_bytes, sr)
+    segs = _split_by_silence(audio, sr)
+    if len(segs) != 7:
+        raise VerifyError(
+            f'voice segmentation failed: expected 7 segments (prompt + 6 digits), got {len(segs)}'
+        )
+    if lang:
+        centroids, labels, _, _, _ = _load_templates(lang)
+    else:
+        prompt_feat = _mfcc_feature(segs[0], sr)
+        lang = _detect_lang(prompt_feat)
+        centroids, labels, _, _, _ = _load_templates(lang)
+    digits = []
+    for seg in segs[1 : 1 + 6]:
+        feat = _mfcc_feature(seg, sr)
+        pred = _predict(feat, centroids, labels)
+        digits.append(str(pred))
+    return ''.join(digits)
 
 
 def _load_audio(data: bytes, sr: int = 16000) -> np.ndarray:
@@ -59,19 +78,24 @@ def _dct_matrix(n_filters: int, n_ceps: int = 13) -> np.ndarray:
     return mat * np.sqrt(2 / n_filters)
 
 
+@functools.lru_cache(maxsize=8)
+def _mel_basis(sr: int, n_fft: int, n_mels: int) -> np.ndarray:
+    return _create_mel_filterbank(sr, n_fft, n_mels).astype(np.float32)
+
+
+@functools.lru_cache(maxsize=4)
+def _dct_mat(n_mels: int, n_mfcc: int) -> np.ndarray:
+    return _dct_matrix(n_mels, n_mfcc).astype(np.float32)
+
+
 def _compute_mfcc(y: np.ndarray, sr: int = 16000, n_mfcc: int = 13) -> np.ndarray:
-    global _mel_basis, _dct_mat
     n_fft, hop_length, n_mels = 2048, 512, 128
     if len(y) == 0:
         return np.zeros((n_mfcc, 1), dtype=np.float32)
     S = np.abs(_stft(y, n_fft, hop_length).astype(np.complex64)) ** 2
-    if _mel_basis is None:
-        _mel_basis = _create_mel_filterbank(sr, n_fft, n_mels).astype(np.float32)
-    mel_S = np.dot(_mel_basis, S)
+    mel_S = np.dot(_mel_basis(sr, n_fft, n_mels), S)
     log_mel_S = 10.0 * np.log10(np.maximum(1e-10, mel_S))
-    if _dct_mat is None:
-        _dct_mat = _dct_matrix(n_mels, n_mfcc).astype(np.float32)
-    return np.dot(_dct_mat, log_mel_S).astype(np.float32)
+    return np.dot(_dct_mat(n_mels, n_mfcc), log_mel_S).astype(np.float32)
 
 
 def _compute_delta(x: np.ndarray, order: int = 1, width: int = 9) -> np.ndarray:
@@ -133,30 +157,25 @@ def _split_by_silence(y: np.ndarray, sr: int) -> list[np.ndarray]:
     return segs
 
 
-def _load_one(lang: str):
-    if lang not in _cache:
-        X, y, sr, lang_name, prompt = load_templates(lang)
-        if _prompts is not None:
-            _prompts[lang] = prompt
-        _cache[lang] = (X, y, sr, lang_name, prompt)
-
-
-def _load_all():
-    global _prompts
-    if _prompts is not None:
-        return
-    _prompts = {}
-    for lang in ('zho', 'eng'):
-        _load_one(lang)
-        _prompts[lang] = _cache[lang][4]
+@functools.lru_cache(maxsize=16)
+def _load_templates(lang: str) -> tuple[np.ndarray, np.ndarray, int, str, np.ndarray]:
+    path = files('wulu_geetest_bypass_voice').joinpath(f'{lang}.npz')
+    data = np.load(str(path))
+    return (
+        data['X'],
+        data['y'],
+        int(data['sr']),
+        str(data['lang']),
+        data['prompt'],
+    )
 
 
 def _detect_lang(prompt_feat: np.ndarray) -> str:
-    _load_all()
     best_lang = 'zho'
     best_dist = float('inf')
-    for lang, p in _prompts.items():
-        dist = np.linalg.norm(prompt_feat - p)
+    for lang in ('zho', 'eng'):
+        _, _, _, _, prompt = _load_templates(lang)
+        dist = np.linalg.norm(prompt_feat - prompt)
         if dist < best_dist:
             best_dist = dist
             best_lang = lang
@@ -165,7 +184,7 @@ def _detect_lang(prompt_feat: np.ndarray) -> str:
 
 def _predict(feat: np.ndarray, centroids: np.ndarray, labels: np.ndarray) -> int:
     dists = np.linalg.norm(centroids - feat, axis=1)
-    return labels[dists.argmin()]
+    return labels[dists.argmin()]  # type: ignore
 
 
 def _mfcc_feature(seg: np.ndarray, sr: int) -> np.ndarray:
@@ -173,26 +192,3 @@ def _mfcc_feature(seg: np.ndarray, sr: int) -> np.ndarray:
     d = _compute_delta(m, order=1)
     d2 = _compute_delta(m, order=2)
     return np.concatenate([m.mean(axis=1), d.mean(axis=1), d2.mean(axis=1)])
-
-
-def solve_voice(mp3_bytes: bytes, lang: str = '') -> str:
-    sr = 16000
-    audio = _load_audio(mp3_bytes, sr)
-    segs = _split_by_silence(audio, sr)
-    if len(segs) != 7:
-        raise VerifyError(
-            f'voice segmentation failed: expected 7 segments (prompt + 6 digits), got {len(segs)}'
-        )
-    if lang:
-        _load_one(lang)
-        centroids, labels, _, _, _ = _cache[lang]
-    else:
-        prompt_feat = _mfcc_feature(segs[0], sr)
-        lang = _detect_lang(prompt_feat)
-        centroids, labels, _, _, _ = _cache[lang]
-    digits = []
-    for seg in segs[1 : 1 + 6]:
-        feat = _mfcc_feature(seg, sr)
-        pred = _predict(feat, centroids, labels)
-        digits.append(str(pred))
-    return ''.join(digits)

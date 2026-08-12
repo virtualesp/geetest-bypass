@@ -22,7 +22,6 @@ from .solver import (
     solve_match,
     solve_slide,
     solve_svg,
-    solve_voice,
     solve_winlinze,
 )
 from .solver.svg import frame_times
@@ -60,7 +59,6 @@ class Geetest:
         'svg_seed': solve_svg,
         'svg_icon': solve_svg,
         'match': solve_match,
-        'voice': solve_voice,
         'winlinze': solve_winlinze,
     }
     _solvers.update(discover_plugins())

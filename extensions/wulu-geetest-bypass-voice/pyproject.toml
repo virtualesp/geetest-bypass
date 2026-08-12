@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "wulu-geetest-bypass-voice"
 version = "0.1.0"
-description = "Voice digit recognition templates for wulu-geetest-bypass"
+description = "Offline voice solver (MFCC) for wulu-geetest-bypass"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -18,7 +18,10 @@ keywords = [
     "mfcc",
     'wulu-geetest-bypass',
 ]
-dependencies = ["numpy>=1.24.0"]
+dependencies = ["miniaudio>=1.71", "numpy>=1.24.0", "wulu-geetest-bypass"]
+
+[project.entry-points."wulu_geetest_bypass.solvers"]
+voice = "wulu_geetest_bypass_voice.solver:solve_voice"
 
 [project.urls]
 Homepage = "https://github.com/wulu007/geetest-bypass"

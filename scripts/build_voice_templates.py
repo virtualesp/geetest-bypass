@@ -15,13 +15,13 @@ from pathlib import Path
 
 import numpy as np
 from faster_whisper import WhisperModel
-
-from wulu_geetest_bypass import Geetest
-from wulu_geetest_bypass.solver.voice import (
+from wulu_geetest_bypass_voice.solver import (
     _load_audio,
     _mfcc_feature,
     _split_by_silence,
 )
+
+from wulu_geetest_bypass import Geetest
 
 CAPTCHA_ID = '54088bb07d2df3c46b79f80300b0abbe'
 RAW_DIR = Path('resources/voice/raw')
