@@ -1,4 +1,7 @@
+import functools
 import importlib
+import importlib.metadata
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -10,12 +13,38 @@ if TYPE_CHECKING:
 
 
 __all__ = [
+    'discover_plugins',
     'solve_match',
     'solve_slide',
     'solve_svg',
     'solve_voice',
     'solve_winlinze',
 ]
+
+_ENTRY_POINT_GROUP = 'wulu_geetest_bypass.solvers'
+
+
+@functools.lru_cache(maxsize=1)
+def discover_plugins() -> dict[str, Callable]:
+    """Discover third-party solvers registered via entry points.
+
+    Plugin packages register their solvers under the
+    ``wulu_geetest_bypass.solvers`` entry point group, e.g.::
+
+        [project.entry-points."wulu_geetest_bypass.solvers"]
+        icon = "my_pkg.solver:solve_icon"
+
+    The entry point *name* is the ``captcha_type`` it handles; the value is
+    a ``module:attribute`` reference to the solver callable. The result is
+    cached after the first call.
+    """
+    solvers: dict[str, Callable] = {}
+    for ep in importlib.metadata.entry_points(group=_ENTRY_POINT_GROUP):
+        try:
+            solvers[ep.name] = ep.load()
+        except Exception:
+            continue
+    return solvers
 
 
 def __getattr__(name):

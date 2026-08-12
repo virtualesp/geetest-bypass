@@ -17,7 +17,14 @@ from ._type import (
 from .config import Config
 from .crypto import build_w
 from .parser import generate_pow, parse_abo_pair
-from .solver import solve_match, solve_slide, solve_svg, solve_voice, solve_winlinze
+from .solver import (
+    discover_plugins,
+    solve_match,
+    solve_slide,
+    solve_svg,
+    solve_voice,
+    solve_winlinze,
+)
 from .solver.svg import frame_times
 
 
@@ -56,6 +63,7 @@ class Geetest:
         'voice': solve_voice,
         'winlinze': solve_winlinze,
     }
+    _solvers.update(discover_plugins())
 
     def __init__(self, **kwargs: Unpack[GeetestOptions]):
         self.captcha_id = kwargs['captcha_id']
