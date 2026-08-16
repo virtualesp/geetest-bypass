@@ -1,46 +1,50 @@
 # wulu-geetest-bypass
 
-<div align="center">
-  <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/wulu007/geetest-bypass/ci.yml?logo=github&link=https%3A%2F%2Fgithub.com%2Fwulu007%2Fgeetest-bypass%2Factions">
-  <img src="https://img.shields.io/badge/python-3.11+-blue?logo=python&logoColor=white" alt="Python">
-  <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
-  <img src="https://img.shields.io/badge/geetest-v4-orange" alt="Geetest v4">
-  <img src="https://static.pepy.tech/personalized-badge/wulu-geetest-bypass?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads" alt="downloads">
-</div>
+<p align="center">
+  <a href="https://github.com/wulu007/geetest-bypass/actions"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/wulu007/geetest-bypass/ci.yml?label=CI&logo=github"></a>
+  <a href="https://pypi.org/project/wulu-geetest-bypass/"><img src="https://img.shields.io/badge/python-3.11+-blue?logo=python&logoColor=white" alt="Python"></a>
+  <a href="https://github.com/wulu007/geetest-bypass/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
+  <a href="https://github.com/wulu007/geetest-bypass"><img src="https://img.shields.io/badge/geetest-v4-orange" alt="Geetest v4"></a>
+  <a href="https://pypi.org/project/wulu-geetest-bypass/"><img src="https://static.pepy.tech/personalized-badge/wulu-geetest-bypass?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads" alt="downloads"></a>
+</p>
 
-纯 Python 实现的极验行为验证 v4 自动化通过库（无需 Node.js）。自动处理 `ai` / `slide` / `match` / `winlinze` / `svg_seed` / `svg_icon` / `voice` 七种风险类型，支持自定义重试、代理和 HTTP 客户端。
+<p align="center">
+| <b>English</b> | <a href="./README.zh-CN.md"><b>简体中文</b></a> |
+</p>
 
-## 安装
+A pure Python library to pass Geetest behavioral CAPTCHA v4 automatically (no Node.js required). Handles seven risk types: `ai` / `slide` / `match` / `winlinze` / `svg_seed` / `svg_icon` / `voice`, with support for custom retry, proxies, and HTTP clients.
 
-推荐使用 `uv`（更快、更现代的 Python 包管理器）：
+## Installation
+
+`uv` is recommended (faster, more modern Python package manager):
 
 ```bash
 uv add "wulu-geetest-bypass[all]"
 ```
 
-也可用 `pip`：
+You can also use `pip`:
 
 ```bash
 pip install "wulu-geetest-bypass[all]"
 ```
 
-可选依赖：
+Optional dependencies:
 
 ```bash
-# voice 语音验证
+# voice verification
 uv add "wulu-geetest-bypass[voice]"
 
-# slide 滑块（需要 opencv）
+# slide puzzle (requires opencv)
 uv add "wulu-geetest-bypass[slide]"
 
-# svg SVG 图标选择 + slide
+# svg SVG icon selection + slide
 uv add "wulu-geetest-bypass[svg]"
 
-# 全部安装
+# everything
 uv add "wulu-geetest-bypass[all]"
 ```
 
-## 快速开始
+## Quick Start
 
 ```python
 import asyncio
@@ -63,56 +67,56 @@ async def main():
 asyncio.run(main())
 ```
 
-每次验证会自动重试最多 3 次（可通过 `retry` 参数调整），失败时抛出 `VerifyError`。
+Each verification retries up to 3 times automatically (adjustable via the `retry` parameter), and raises `VerifyError` on failure.
 
-## 风险类型
+## Risk Types
 
-| 类型       | 说明             | 依赖      | 支持 |
-| ---------- | ---------------- | --------- | ---- |
-| `ai`       | 无感验证         | 无        | ✅    |
-| `slide`    | 滑块拼图         | `[slide]` | ✅    |
-| `match`    | 3×3 连线         | 无        | ✅    |
-| `winlinze` | 五子棋           | 无        | ✅    |
-| `svg_seed` | SVG 3x3 图片选择 | `[svg]`   | ✅    |
-| `svg_icon` | SVG 2x2 图标选择 | `[svg]`   | ✅    |
-| `voice`    | 语音验证         | `[voice]` | ✅    |
-| `icon`     | 图标点选         | 无        | ❌    |
-| `word`     | 文字点选         | 无        | ❌    |
-| `nine`     | 九宫格           | 无        | ❌    |
-| `phrase`   | 短语识别         | 无        | ❌    |
-| `pencil`   | 涂鸦             | 无        | ❌    |
-| `space`    | 空间推理         | 无        | ❓    |
+| Type       | Description              | Dependency | Support |
+| ---------- | ------------------------ | ---------- | ------- |
+| `ai`       | Silent verification      | none       | ✅      |
+| `slide`    | Slider puzzle            | `[slide]`  | ✅      |
+| `match`    | 3×3 connect              | none       | ✅      |
+| `winlinze` | Gomoku                   | none       | ✅      |
+| `svg_seed` | SVG 3x3 image selection  | `[svg]`    | ✅      |
+| `svg_icon` | SVG 2x2 icon selection   | `[svg]`    | ✅      |
+| `voice`    | Voice verification       | `[voice]`  | ✅      |
+| `icon`     | Icon click               | none       | ❌      |
+| `word`     | Word click               | none       | ❌      |
+| `nine`     | Nine-grid                | none       | ❌      |
+| `phrase`   | Phrase recognition       | none       | ❌      |
+| `pencil`   | Doodle                   | none       | ❌      |
+| `space`    | Spatial reasoning        | none       | ❓      |
 
 ## API
 
 ### `Geetest(**options)`
 
-| 参数             | 类型                  | 说明                                                         |
-| ---------------- | --------------------- | ------------------------------------------------------------ |
-| `captcha_id`     | `str`                 | 验证 ID（必填）                                              |
-| `risk_type`      | `RiskType`            | 风险类型，默认 `'ai'`                                        |
-| `client_type`    | `ClientType`          | 客户端类型，`'web'` / `'web_mobile'` / `'android'` / `'ios'` |
-| `lang`           | `Lang`                | 语言，`'zho'` / `'eng'` / `'fra'` / `'deu'` 等 13 种           |
-| `challenge`      | `str`                 | 自定义 challenge（不传则自动生成）                           |
-| `user_info`      | `Any`                 | 附加用户信息（预留）                                         |
-| `voice`          | `bool`                | 启用无障碍语音验证（需要 `[voice]` 依赖）                    |
-| `client_options` | `wreq.ClientConfig`   | HTTP 客户端配置（代理、headers、模拟等）                     |
-| `client`         | `wreq.Client \| None` | 自定义 HTTP 客户端（优先级高于 `client_options`）            |
+| Parameter         | Type                  | Description                                                  |
+| ----------------- | --------------------- | ------------------------------------------------------------ |
+| `captcha_id`      | `str`                 | Verification ID (required)                                   |
+| `risk_type`       | `RiskType`            | Risk type, default `'ai'`                                    |
+| `client_type`     | `ClientType`          | Client type, `'web'` / `'web_mobile'` / `'android'` / `'ios'` |
+| `lang`            | `Lang`                | Language, `'zho'` / `'eng'` / `'fra'` / `'deu'` and 13 more  |
+| `challenge`       | `str`                 | Custom challenge (auto-generated if omitted)                 |
+| `user_info`       | `Any`                 | Extra user info (reserved)                                   |
+| `voice`           | `bool`                | Enable accessible voice verification (requires `[voice]`)    |
+| `client_options`  | `wreq.ClientConfig`   | HTTP client config (proxy, headers, emulation, etc.)         |
+| `client`          | `wreq.Client \| None` | Custom HTTP client (takes priority over `client_options`)    |
 
-### 方法
+### Methods
 
 #### `load() -> dict`
 
-获取验证初始化数据，返回值包含 `captcha_type`、`lot_number`、`payload`、`process_token`、`pow_detail` 等字段，可直接传入 `verify()`。
+Fetches verification init data. The return value includes `captcha_type`, `lot_number`, `payload`, `process_token`, `pow_detail` and other fields, which can be passed directly to `verify()`.
 
 #### `verify(data) -> VerifyResponse`
 
-提交验证并返回完整响应：
+Submits the verification and returns the full response:
 
 ```python
 class VerifyResponse:
     status: str  # "success" / "fail" / "error"
-    data: VerifyData  # 验证结果数据
+    data: VerifyData  # verification result data
 
 
 class VerifyData:
@@ -128,7 +132,7 @@ class VerifyData:
 
 #### `resolve(retry=3) -> Seccode`
 
-一键完成 `load()` + `verify()`，验证失败时自动重试，返回 `Seccode`：
+One-call `load()` + `verify()`, retries automatically on failure, returns `Seccode`:
 
 ```python
 class Seccode:
@@ -139,13 +143,13 @@ class Seccode:
     captcha_output: str
 ```
 
-| 参数    | 类型  | 说明                   |
-| ------- | ----- | ---------------------- |
-| `retry` | `int` | 失败重试次数，默认 `3` |
+| Parameter | Type  | Description                          |
+| --------- | ----- | ------------------------------------ |
+| `retry`   | `int` | Retry count on failure, default `3`  |
 
-### 注册自定义 Solver
+### Registering Custom Solvers
 
-对于未内置支持的风险类型，可通过 `register_solver` 注入自定义求解器：
+For risk types without built-in support, inject a custom solver via `register_solver`:
 
 ```python
 from wulu_geetest_bypass import Geetest
@@ -157,50 +161,48 @@ def solve_icon(imgs: bytes, ques: list[bytes]) -> list[list[int]]: ...
 Geetest.register_solver('icon', solve_icon)
 ```
 
-注册后 `generate_w()` 会自动调用，传入对应的 payload 字段：
+Once registered, `generate_w()` calls it automatically with the corresponding payload fields:
 
-| 类型 | Solver 签名 |
-|------|------------|
-| `icon` / `word` / `phrase` | `(imgs: bytes, ques: list[bytes]) -> list[list[int]]` |
-| `nine` | `(imgs: bytes, ques: list[bytes], nine_nums: int) -> list[list[int]]` |
-| `pencil` | `(imgs: bytes) -> list` |
-| `space` | 同 SVG，由内置 solver 兜底 |
+| Type                          | Solver signature                                      |
+| ----------------------------- | ----------------------------------------------------- |
+| `icon` / `word` / `phrase`    | `(imgs: bytes, ques: list[bytes]) -> list[list[int]]` |
+| `nine`                        | `(imgs: bytes, ques: list[bytes], nine_nums: int) -> list[list[int]]` |
+| `pencil`                      | `(imgs: bytes) -> list`                               |
+| `space`                       | Same as SVG, handled by built-in solver as fallback   |
 
-内置 solver 也可被覆盖：
+Built-in solvers can also be overridden:
 
 ```python
 Geetest.register_solver('slide', my_custom_slide_solver)
 ```
 
+### Accessible Mode
 
-### 无障碍模式
-
-极验 v4 的部分站点在服务端开启了语音验证通道（无障碍模式）。当站点支持时，**无论原始风险类型是什么**，都可以通过 `voice=True` 强制切换到语音验证，从而绕过原本的滑块、点选等行为验证。
+Some Geetest v4 sites enable the voice channel (accessible mode) server-side. When a site supports it, **regardless of the original risk type**, you can force voice verification via `voice=True`, bypassing the original slider / click behavioral checks.
 
 ```python
-# 原本是滑块验证，但站点支持无障碍模式
+# Originally a slide verification, but the site supports accessible mode
 g = Geetest(captcha_id='your_captcha_id', risk_type='slide', voice=True)
 result = await g.resolve()
 ```
 
-切换后流程变为：加载语音验证码 → 下载音频 → 离线识别数字 → 提交验证。全程无需浏览器环境，不需处理图片识别。
+The flow becomes: load voice captcha → download audio → recognize digits offline → submit verification. No browser environment or image recognition needed.
 
-> **注意**：并非所有站点都开启了无障碍通道。如果站点不支持，`load()` 返回的 `show_voice` 字段为 `false`，此时设置 `voice=True` 不会生效，仍按原 `risk_type` 处理。
+> **Note**: Not all sites enable the accessible channel. If unsupported, the `show_voice` field in `load()` returns `false`, and setting `voice=True` has no effect — the original `risk_type` is still used.
 
-### 异常
+### Exceptions
 
-| 异常           | 说明                         |
-| -------------- | ---------------------------- |
-| `GeetestError` | 所有自定义异常的基类         |
-| `VerifyError`  | 验证失败（所有重试均未通过） |
+| Exception        | Description                                            |
+| ---------------- | ------------------------------------------------------ |
+| `GeetestError`   | Base class of all custom exceptions                    |
+| `VerifyError`    | Verification failed (all retries exhausted)            |
 
-## 支持与更新
+## Support & Updates
 
-- 本项目会持续跟踪极验 v4 的行为验证变化，及时更新绕过逻辑与 solver。
-- 遇到问题欢迎提交 [Issue](https://github.com/wulu007/geetest-bypass/issues)，也欢迎通过 PR 贡献代码。
-- 如果本项目对你有所帮助，欢迎点个 ⭐ Star 鼓励作者持续更新。
+- This project continuously tracks Geetest v4 behavioral verification changes and updates the bypass logic and solvers promptly.
+- Please open an [Issue](https://github.com/wulu007/geetest-bypass/issues) if you encounter problems, and PRs are welcome.
+- If this project helps you, feel free to give it a ⭐ Star to encourage continued development.
 
-## 免责声明
+## Disclaimer
 
-本项目仅供学习和研究使用。使用者应遵守相关法律法规及平台服务条款，
-禁止用于任何非法用途。作者不对因使用本项目产生的任何法律问题承担责任。
+This project is for learning and research purposes only. Users should comply with applicable laws and platform terms of service; any illegal use is prohibited. The author assumes no responsibility for any legal issues arising from the use of this project.
