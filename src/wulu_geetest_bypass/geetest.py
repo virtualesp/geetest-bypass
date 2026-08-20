@@ -64,11 +64,13 @@ class Geetest:
     _solvers.update(discover_plugins())
 
     def __init__(self, **kwargs: Unpack[GeetestOptions]):
+        """See :class:`~wulu_geetest_bypass._type.GeetestOptions` for available parameters."""
         self.captcha_id = kwargs['captcha_id']
         self.risk_type = kwargs.get('risk_type', 'ai')
         self.client_type = kwargs.get('client_type', 'web')
         self.lang = kwargs.get('lang', 'zh')
         self.voice = kwargs.get('voice')
+        self.pt = kwargs.get('pt')
         if 'client' in kwargs:
             self.client = kwargs['client']
         else:
@@ -125,6 +127,8 @@ class Geetest:
             data['voice_audio'] = await self._load_resource(data['voice_path'])
 
         data.setdefault('captcha_id', self.captcha_id)
+        if self.pt is not None:
+            data['pt'] = self.pt.value
 
         base = {
             'callback': _callback(),

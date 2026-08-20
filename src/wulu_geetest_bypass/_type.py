@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -76,7 +77,13 @@ class BasePayload(TypedDict):
     lot_number: str
     pow_detail: dict[str, Any]
     guard: bool
-    pt: str
+    pt: int
+    """
+    Protocol type. Controls whether encryption is applied and which algorithm is used:
+    - `0` → no encryption; the plaintext is directly returned via `urlsafe_encode`.
+    - `1` → uses AES + RSA hybrid encryption.
+    - `2` → uses SM4 + SM2 hybrid encryption.
+    """
     language: NotRequired[str]
 
 
@@ -124,7 +131,6 @@ class VoicePayload(BasePayload):
     captcha_type: Literal['voice']
     voice_path: str
     voice_audio: bytes
-    language: str
 
 
 WPayload = (
@@ -163,6 +169,12 @@ class VerifyResponse(TypedDict):
     data: VerifyData
 
 
+class Encryption(Enum):
+    NONE = 0
+    AES_RSA = 1
+    SM4_SM2 = 2
+
+
 class GeetestOptions(TypedDict, total=False):
     captcha_id: Required[str]
     risk_type: RiskType
@@ -173,5 +185,17 @@ class GeetestOptions(TypedDict, total=False):
     user_info: Any
     voice: bool
     """ 是否转为语音验证 """
-    client_options: Any
+    client_options: ClientConfig
     """ wreq.Client config dict """
+    pt: Encryption | None
+    """
+    Encryption mode.
+
+    - If `None` (default): the encryption mode is **automatically determined by the internal logic**
+    - If set to a specific `Encryption` value (`NONE`, `AES_RSA`, or `SM4_SM2`): forces that mode,
+    overriding the internal decision.
+
+    Note:
+    - `Encryption.NONE` means no encryption (direct `urlsafe_encode`).
+    - `Encryption.AES_RSA` and `Encryption.SM4_SM2` enable hybrid encryption.
+    """
