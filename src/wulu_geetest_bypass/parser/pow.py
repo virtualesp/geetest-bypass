@@ -1,7 +1,7 @@
 import hashlib
 import uuid
 
-_THRESHOLDS = {1: '7', 2: '3', 3: '1'}
+_THRESHOLDS = {0: 'f', 1: '7', 2: '3', 3: '1'}
 _HASH_FN = {
     'md5': hashlib.md5,
     'sha1': hashlib.sha1,
@@ -34,14 +34,12 @@ def generate_pow(
     )
 
     while True:
-        rand = str(uuid.uuid4()).replace('-', '')
+        rand = uuid.uuid4().hex
         message = header + rand
         h = hasher_creator(message.encode()).hexdigest()
 
         # 检查是否满足工作量难度
         if not h.startswith(prefix):
             continue
-        if remainder == 0:
-            return {'pow_msg': message, 'pow_sign': h}
-        elif h[zero_count] <= threshold:
+        if h[zero_count] <= threshold:
             return {'pow_msg': message, 'pow_sign': h}

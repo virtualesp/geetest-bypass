@@ -77,7 +77,7 @@ class BasePayload(TypedDict):
     lot_number: str
     pow_detail: dict[str, Any]
     guard: bool
-    pt: int
+    pt: int | str
     """
     Protocol type. Controls whether encryption is applied and which algorithm is used:
     - `0` → no encryption; the plaintext is directly returned via `urlsafe_encode`.
