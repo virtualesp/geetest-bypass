@@ -49,8 +49,7 @@ quote-style = "single"
 indent-style = "space"
 
 [tool.ruff.lint]
-select = ['I']
-fixable = ['I']
+fixable = ['ALL']
 
 [tool.ruff.lint.isort]
 force-single-line = false
@@ -60,10 +59,17 @@ split-on-trailing-comma = true
 [tool.pytest.ini_options]
 addopts = "-s"
 
+[tool.pyrefly]
+project-includes = [
+    "**/*.py*",
+    "**/*.ipynb",
+]
+
 [dependency-groups]
 dev = [
     "pytest>=9.1.0",
     "pytest-asyncio>=1.4.0",
     "faster-whisper>=1.2.1",
     "wulu-geetest-bypass[all]",
+    "pyrefly>=1.2.0",
 ]
